@@ -1,7 +1,7 @@
 <img src="https://user-images.githubusercontent.com/15239005/178734626-93f21b81-3072-498f-be01-13d4e459f587.png" width=60%>
 Lightweight async/await networking library with interceptor support.
 
-## Getting started
+## 🚀 Getting started
 
 `AsyncNetwork`'s session acts as a wrapper to [`URLSession`](https://developer.apple.com/documentation/foundation/urlsession) by adding support for interceptors. Interceptors can be used to easily extract common functionality for the preparation of [`URLRequests`](https://developer.apple.com/documentation/foundation/urlrequest) and the handling or retrying of the respective responses. This library allows you to write custom interceptors, but also comes with a couple of handy interceptors for authentication, status code validation, adding custom headers, logging and more!
 
@@ -31,14 +31,14 @@ The second interceptor validates that the status code of the response is between
 
 The third and last interceptor logs the response of every request response to the console. You can modify `subsystem`, `category` and `logType` as well here, if you want to customized that output. For even more control, you might want to look into the more general `.logger` interceptor as well.
 
-## Installation
+## 🔩 Installation
 
 AsyncNetwork is currently only available via Swift Package Manager. See [this tutorial by Apple](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) on how to add a package dependency to your Xcode project.
 
-## Author
+## ✍️ Author
 
 Paul Kraft
 
-## License
+## 📄 License
 
 AsyncNetwork is available under the MIT license. See the LICENSE file for more info.
