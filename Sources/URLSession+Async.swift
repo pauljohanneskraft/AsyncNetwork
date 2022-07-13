@@ -7,7 +7,6 @@
 
 import Foundation
 
-@available(iOS 13, *)
 extension URLSession {
 
     internal func send(_ request: URLRequest) async throws -> (Data, URLResponse) {
