@@ -1,5 +1,5 @@
 //
-//  NetworkSession.swift
+//  Session.swift
 //  AsyncNetwork
 //
 //  Created by Paul Kraft on 12.07.22.

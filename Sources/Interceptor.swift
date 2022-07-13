@@ -1,5 +1,5 @@
 //
-//  NetworkInterceptor.swift
+//  Interceptor.swift
 //  AsyncNetwork
 //
 //  Created by Paul Kraft on 12.07.22.
