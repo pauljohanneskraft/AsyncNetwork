@@ -12,12 +12,18 @@ public struct AuthorizationInterceptor: Interceptor {
     // MARK: Stored Properties
 
     private let headerField: String
+    private let statusCodes: Set<Int>
     private let authenticate: (Bool, URLRequest) async throws -> String
 
     // MARK: Initialization
 
-    public init(headerField: String, authenticate: @escaping (Bool, URLRequest) async throws -> String) {
+    public init(
+        headerField: String,
+        statusCodes: Set<Int>,
+        authenticate: @escaping (Bool, URLRequest) async throws -> String
+    ) {
         self.headerField = headerField
+        self.statusCodes = statusCodes
         self.authenticate = authenticate
     }
 
@@ -31,7 +37,8 @@ public struct AuthorizationInterceptor: Interceptor {
     }
 
     public func shouldRetry(_ request: URLRequest, for response: inout URLResponse, data: inout Data) async throws -> Bool {
-        guard (response as? HTTPURLResponse)?.statusCode == 401 else {
+        guard let statusCode = (response as? HTTPURLResponse)?.statusCode,
+              statusCodes.contains(statusCode) else {
             return false
         }
         return (try? await authenticate(true, request)) != nil
@@ -43,9 +50,14 @@ extension Interceptor where Self == AuthorizationInterceptor {
 
     public static func authorization(
         headerField: String = "Authorization",
+        statusCodes: Set<Int> = [401],
         authenticate: @escaping (Bool, URLRequest) async throws -> String
     ) -> Self {
-        .init(headerField: headerField, authenticate: authenticate)
+        .init(
+            headerField: headerField,
+            statusCodes: statusCodes,
+            authenticate: authenticate
+        )
     }
 
 }

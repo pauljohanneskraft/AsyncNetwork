@@ -54,14 +54,14 @@ extension Interceptor where Self == ValidationInterceptor {
 
     public static func validateStatus(
         validRange: Range<Int> = 200..<300,
-        customError: @escaping (URLRequest, HTTPURLResponse, Data) -> (any Error)? = {
+        error: @escaping (URLRequest, HTTPURLResponse, Data) -> (any Error)? = {
             ValidationError(response: $1, data: $2)
         }
     ) -> Self {
         .init { request, response, data in
             if let httpResponse = response as? HTTPURLResponse,
                !validRange.contains(httpResponse.statusCode),
-               let error = customError(request, httpResponse, data) {
+               let error = error(request, httpResponse, data) {
                 throw error
             }
         }

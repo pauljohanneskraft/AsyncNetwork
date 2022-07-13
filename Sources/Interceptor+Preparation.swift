@@ -29,16 +29,16 @@ public struct PreparationInterceptor: Interceptor {
 
 extension Interceptor where Self == PreparationInterceptor {
 
-    public static func addHeaderFields(
-        overrideExisting: Bool = false,
+    public static func addHeaders(
+        override: Bool = false,
         _ headers: @escaping (URLRequest) -> [String: String]
     ) -> Self {
-        .adaptHeaderFields { existingHeaders, request in
-            existingHeaders.merge(headers(request)) { overrideExisting ? $1 : $0 }
+        .setHeaders { existingHeaders, request in
+            existingHeaders.merge(headers(request)) { override ? $1 : $0 }
         }
     }
 
-    public static func adaptHeaderFields(
+    public static func setHeaders(
         _ modify: @escaping (inout [String: String], URLRequest) -> Void
     ) -> Self {
         .init { request in
