@@ -1,4 +1,4 @@
-<img src="https://user-images.githubusercontent.com/15239005/178734626-93f21b81-3072-498f-be01-13d4e459f587.png" width=60%>
+<img src="https://user-images.githubusercontent.com/15239005/178734626-93f21b81-3072-498f-be01-13d4e459f587.png" width=50%>
 Lightweight async/await networking library with interceptor support.
 
 ## 🚀 Getting started
