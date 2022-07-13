@@ -26,7 +26,7 @@ public final class Session {
     // MARK: Methods
 
     @discardableResult
-    func send(_ request: URLRequest) async throws -> Data {
+    public func send(_ request: URLRequest) async throws -> Data {
         try await _send(request, retryCount: maximumRetryCount)
     }
 
