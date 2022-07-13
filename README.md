@@ -1,8 +1,8 @@
-# AsyncNetwork
+<img src="https://user-images.githubusercontent.com/15239005/178734626-93f21b81-3072-498f-be01-13d4e459f587.png" width=60%>
 
 Lightweight async/await networking library with interceptor support.
 
-### Getting started
+## Getting started
 
 `AsyncNetwork`'s session acts as a wrapper to [`URLSession`](https://developer.apple.com/documentation/foundation/urlsession) by adding support for interceptors. Interceptors can be used to easily extract common functionality for the preparation of [`URLRequests`](https://developer.apple.com/documentation/foundation/urlrequest) and the handling or retrying of the respective responses. This library allows you to write custom interceptors, but also comes with a couple of handy interceptors for authentication, status code validation, adding custom headers, logging and more!
 
