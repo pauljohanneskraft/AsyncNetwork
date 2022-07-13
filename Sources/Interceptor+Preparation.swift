@@ -48,4 +48,10 @@ extension Interceptor where Self == PreparationInterceptor {
         }
     }
 
+    public static func prepare(
+        _ prepare: @escaping (inout URLRequest) async throws -> Void
+    ) -> Self {
+        .init(prepare: prepare)
+    }
+
 }

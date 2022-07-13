@@ -47,14 +47,14 @@ public struct ValidationInterceptor: Interceptor {
 extension Interceptor where Self == ValidationInterceptor {
 
     public static func validate(
-        _ validate: @escaping (URLRequest, URLResponse, Data) throws -> Void = { _, _, _ in }
+        _ validate: @escaping (URLRequest, URLResponse, Data) throws -> Void
     ) -> Self {
         .init(validate: validate)
     }
 
     public static func validateStatus(
         validRange: Range<Int> = 200..<300,
-        customError: @escaping (URLRequest, HTTPURLResponse, Data) -> Error? = {
+        customError: @escaping (URLRequest, HTTPURLResponse, Data) -> (any Error)? = {
             ValidationError(response: $1, data: $2)
         }
     ) -> Self {
