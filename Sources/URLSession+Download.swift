@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  URLSession+Download.swift
+//  AsyncNetwork
 //
 //  Created by Paul Kraft on 14.07.22.
 //
