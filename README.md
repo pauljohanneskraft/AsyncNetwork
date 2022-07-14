@@ -25,11 +25,11 @@ let session = Session(
 
 In the code example above, a `Session` is created on the basis of an underlying [`URLSession`](https://developer.apple.com/documentation/foundation/urlsession) and an array of interceptors. Interceptors can be thought of as layers, as they are called in order during request preparation and in reverse order for handling the response.
 
-The first interceptor sets a set of headers, so that each request contains the correct "Accept-Language", "Accept-Type" and "Content-Type" header fields. In this example, we are overriding existing headers, which we might not always want to do, so you might want to have a look at `.setHeaders` instead.
+The first interceptor sets a set of headers, so that each request contains the correct "Accept-Language", "Accept-Type" and "Content-Type" header fields. In this example, we are overriding existing headers, which we might not always want to do, so you might want to have a look at `.addHeaders` instead.
 
 The second interceptor validates that the status code of the response is between 200 and 299. If not, it throws an error and makes the whole request fail based on that. Successive interceptors (in this case, the one above it, which is not doing anything for response handling anyways), will not be called due to the error being thrown.
 
-The third and last interceptor logs the response of every request response to the console. You can modify `subsystem`, `category` and `logType` as well here, if you want to customized that output. For even more control, you might want to look into the more general `.logger` interceptor as well.
+The third and last interceptor logs the response of every request response to the console. You can modify `subsystem`, `category` and `logType` as well here, if you want to customize that output. For even more control, you might want to look into the more general `.logger` interceptor as well.
 
 ## 🔩 Installation
 
