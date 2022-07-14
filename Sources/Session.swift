@@ -26,13 +26,18 @@ public final class Session {
     // MARK: Methods
 
     @discardableResult
-    public func send(_ request: URLRequest) async throws -> Data {
-        try await _send(request, retryCount: maximumRetryCount)
+    public func data(for request: URLRequest) async throws -> Data {
+        try await _data(for: request, retryCount: maximumRetryCount)
+    }
+
+    @discardableResult
+    public func data(from url: URL) async throws -> Data {
+        try await data(for: .init(url: url))
     }
 
     // MARK: Helpers
 
-    private func _send(_ request: URLRequest, retryCount: Int) async throws -> Data {
+    private func _data(for request: URLRequest, retryCount: Int) async throws -> Data {
         var actualRequest = request
 
         try Task.checkCancellation()
@@ -43,14 +48,14 @@ public final class Session {
 
         try Task.checkCancellation()
 
-        var (data, response) = try await session.send(actualRequest)
+        var (data, response) = try await session.receiveData(for: actualRequest)
 
         try Task.checkCancellation()
 
         for interceptor in interceptors.reversed() {
             if try await interceptor.shouldRetry(actualRequest, for: &response, data: &data) && retryCount > 0 {
                 try Task.checkCancellation()
-                return try await _send(request, retryCount: retryCount - 1)
+                return try await _data(for: request, retryCount: retryCount - 1)
             }
         }
 
