@@ -66,21 +66,55 @@ public final class Session {
 
     // MARK: Methods - Download
 
-    public func download(from url: URL) async throws -> URL {
-        try await download(for: .init(url: url))
+    public func download(
+        from url: URL,
+        progress: @escaping (Double) -> Void = { _ in },
+        resumeData resumeDataHandler: ((Data?) -> Void)? = nil
+    ) async throws -> URL {
+
+        try await download(
+            for: .init(url: url),
+            progress: progress,
+            resumeData: resumeDataHandler
+        )
     }
 
-    public func download(for request: URLRequest) async throws -> URL {
-        try await _download(for: request, retryCount: maximumRetryCount)
+    public func download(
+        for request: URLRequest,
+        progress: @escaping (Double) -> Void = { _ in },
+        resumeData resumeDataHandler: ((Data?) -> Void)? = nil
+    ) async throws -> URL {
+
+        try await _download(
+            for: request,
+            retryCount: maximumRetryCount,
+            progress: progress,
+            resumeData: resumeDataHandler
+        )
     }
 
-    public func download(resumeFrom resumeData: Data) async throws -> URL {
-        try await _download(resumeFrom: resumeData, retryCount: maximumRetryCount)
+    public func download(
+        resumeFrom resumeData: Data,
+        progress: @escaping (Double) -> Void = { _ in },
+        resumeData resumeDataHandler: ((Data?) -> Void)? = nil
+    ) async throws -> URL {
+
+        try await _download(
+            resumeFrom: resumeData,
+            retryCount: maximumRetryCount,
+            progress: progress,
+            resumeData: resumeDataHandler
+        )
     }
 
     // MARK: Helpers - Download
 
-    private func _download(for request: URLRequest, retryCount: Int) async throws -> URL {
+    private func _download(
+        for request: URLRequest,
+        retryCount: Int,
+        progress: @escaping (Double) -> Void,
+        resumeData resumeDataHandler: ((Data?) -> Void)?
+    ) async throws -> URL {
         var actualRequest = request
 
         try Task.checkCancellation()
@@ -91,14 +125,14 @@ public final class Session {
 
         try Task.checkCancellation()
 
-        var (url, response) = try await session.startDownload(for: actualRequest)
+        var (url, response) = try await session.startDownload(for: actualRequest, progress: progress, resumeData: resumeDataHandler)
 
         try Task.checkCancellation()
 
         for interceptor in interceptors.reversed() {
             if try await interceptor.shouldRetryDownload(actualRequest, for: &response, destination: &url) && retryCount > 0 {
                 try Task.checkCancellation()
-                return try await _download(for: request, retryCount: retryCount - 1)
+                return try await _download(for: request, retryCount: retryCount - 1, progress: progress, resumeData: resumeDataHandler)
             }
         }
 
@@ -107,7 +141,13 @@ public final class Session {
         return url
     }
 
-    private func _download(resumeFrom resumeData: Data, retryCount: Int) async throws -> URL {
+    private func _download(
+        resumeFrom resumeData: Data,
+        retryCount: Int,
+        progress: @escaping (Double) -> Void,
+        resumeData resumeDataHandler: ((Data?) -> Void)?
+    ) async throws -> URL {
+
         var actualResumeData = resumeData
 
         try Task.checkCancellation()
@@ -118,14 +158,20 @@ public final class Session {
 
         try Task.checkCancellation()
 
-        var (url, response) = try await session.resumeDownload(from: actualResumeData)
+        var (url, response) = try await session.resumeDownload(from: actualResumeData, progress: progress, resumeData: resumeDataHandler)
 
         try Task.checkCancellation()
 
         for interceptor in interceptors.reversed() {
             if try await interceptor.shouldRetryDownload(resumingFrom: actualResumeData, for: &response, destination: &url) && retryCount > 0 {
                 try Task.checkCancellation()
-                return try await _download(resumeFrom: resumeData, retryCount: retryCount - 1)
+
+                return try await _download(
+                    resumeFrom: resumeData,
+                    retryCount: retryCount - 1,
+                    progress: progress,
+                    resumeData: resumeDataHandler
+                )
             }
         }
 
@@ -136,25 +182,68 @@ public final class Session {
 
     // MARK: Methods - Upload
 
-    public func upload(with url: URL, from data: Data) async throws -> Data {
-        try await upload(with: .init(url: url), from: data)
+    public func upload(
+        with url: URL,
+        from data: Data,
+        progress: @escaping (Double) -> Void = { _ in }
+    ) async throws -> Data {
+
+        try await upload(
+            with: .init(url: url),
+            from: data,
+            progress: progress
+        )
     }
 
-    public func upload(with request: URLRequest, from data: Data) async throws -> Data {
-        try await _upload(with: request, from: data, retryCount: maximumRetryCount)
+    public func upload(
+        with request: URLRequest,
+        from data: Data,
+        progress: @escaping (Double) -> Void = { _ in }
+    ) async throws -> Data {
+
+        try await _upload(
+            with: request,
+            from: data,
+            retryCount: maximumRetryCount,
+            progress: progress
+        )
     }
 
-    public func upload(with url: URL, fromFile file: URL) async throws -> Data {
-        try await upload(with: .init(url: url), fromFile: file)
+    public func upload(
+        with url: URL,
+        fromFile file: URL,
+        progress: @escaping (Double) -> Void = { _ in }
+    ) async throws -> Data {
+
+        try await upload(
+            with: .init(url: url),
+            fromFile: file,
+            progress: progress
+        )
     }
 
-    public func upload(with request: URLRequest, fromFile file: URL) async throws -> Data {
-        try await _upload(with: request, fromFile: file, retryCount: maximumRetryCount)
+    public func upload(
+        with request: URLRequest,
+        fromFile file: URL,
+        progress: @escaping (Double) -> Void = { _ in }
+    ) async throws -> Data {
+
+        try await _upload(
+            with: request,
+            fromFile: file, retryCount: maximumRetryCount,
+            progress: progress
+        )
     }
 
     // MARK: Helpers - Upload
 
-    private func _upload(with request: URLRequest, from data: Data, retryCount: Int) async throws -> Data {
+    private func _upload(
+        with request: URLRequest,
+        from data: Data,
+        retryCount: Int,
+        progress: @escaping (Double) -> Void
+    ) async throws -> Data {
+
         var actualRequest = request
 
         try Task.checkCancellation()
@@ -172,7 +261,7 @@ public final class Session {
         for interceptor in interceptors.reversed() {
             if try await interceptor.shouldRetryUpload(actualRequest, from: data, for: &response, data: &data) && retryCount > 0 {
                 try Task.checkCancellation()
-                return try await _upload(with: request, from: data, retryCount: retryCount - 1)
+                return try await _upload(with: request, from: data, retryCount: retryCount - 1, progress: progress)
             }
         }
 
@@ -181,7 +270,13 @@ public final class Session {
         return data
     }
 
-    private func _upload(with request: URLRequest, fromFile file: URL, retryCount: Int) async throws -> Data {
+    private func _upload(
+        with request: URLRequest,
+        fromFile file: URL,
+        retryCount: Int,
+        progress: @escaping (Double) -> Void
+    ) async throws -> Data {
+
         var actualRequest = request
 
         try Task.checkCancellation()
@@ -192,14 +287,14 @@ public final class Session {
 
         try Task.checkCancellation()
 
-        var (data, response) = try await session.startUpload(with: actualRequest, fromFile: file)
+        var (data, response) = try await session.startUpload(with: actualRequest, fromFile: file, progress: progress)
 
         try Task.checkCancellation()
 
         for interceptor in interceptors.reversed() {
             if try await interceptor.shouldRetryUpload(actualRequest, fromFile: file, for: &response, data: &data) && retryCount > 0 {
                 try Task.checkCancellation()
-                return try await _upload(with: request, fromFile: file, retryCount: retryCount - 1)
+                return try await _upload(with: request, fromFile: file, retryCount: retryCount - 1, progress: progress)
             }
         }
 
