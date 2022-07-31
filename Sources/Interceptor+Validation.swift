@@ -27,18 +27,53 @@ public struct ValidationInterceptor: Interceptor {
 
     // MARK: Stored Properties
 
-    let validate: (URLRequest, URLResponse, Data) throws -> Void
+    let isValid: (URLResponse) -> Bool
+    let makeError: (URLResponse, Data) -> any Error
 
     // MARK: Initialization
 
-    public init(validate: @escaping (URLRequest, URLResponse, Data) throws -> Void) {
-        self.validate = validate
+    public init(
+        isValid: @escaping (URLResponse) -> Bool,
+        makeError: @escaping (URLResponse, Data) -> any Error
+    ) {
+        self.isValid = isValid
+        self.makeError = makeError
     }
 
     // MARK: Methods
 
     public func shouldRetry(_ request: URLRequest, for response: inout URLResponse, data: inout Data) async throws -> Bool {
-        try validate(request, response, data)
+        if !isValid(response) {
+            throw makeError(response, data)
+        }
+        return false
+    }
+
+    public func shouldRetryDownload(_ request: URLRequest, for response: inout URLResponse, destination: inout URL) async throws -> Bool {
+        if !isValid(response) {
+            throw makeError(response, try Data(contentsOf: destination))
+        }
+        return false
+    }
+
+    public func shouldRetryDownload(resumingFrom resumeData: Data, for response: inout URLResponse, destination: inout URL) async throws -> Bool {
+        if !isValid(response) {
+            throw makeError(response, try Data(contentsOf: destination))
+        }
+        return false
+    }
+
+    public func shouldRetryUpload(_ request: URLRequest, from sourceData: Data, for response: inout URLResponse, data: inout Data) async throws -> Bool {
+        if !isValid(response) {
+            throw makeError(response, data)
+        }
+        return false
+    }
+
+    public func shouldRetryUpload(_ request: URLRequest, fromFile file: URL, for response: inout URLResponse, data: inout Data) async throws -> Bool {
+        if !isValid(response) {
+            throw makeError(response, data)
+        }
         return false
     }
 
@@ -47,23 +82,26 @@ public struct ValidationInterceptor: Interceptor {
 extension Interceptor where Self == ValidationInterceptor {
 
     public static func validate(
-        _ validate: @escaping (URLRequest, URLResponse, Data) throws -> Void
+        isValid: @escaping (URLResponse) -> Bool,
+        makeError: @escaping (URLResponse, Data) -> Error
     ) -> Self {
-        .init(validate: validate)
+        .init(isValid: isValid, makeError: makeError)
     }
 
     public static func validateStatus(
-        validRange: Range<Int> = 200..<300,
-        error: @escaping (URLRequest, HTTPURLResponse, Data) -> (any Error)? = {
-            ValidationError(response: $1, data: $2)
+        in validRange: Range<Int> = 200..<300,
+        error: @escaping (URLResponse, Data) -> any Error = {
+            ValidationError(response: $0, data: $1)
         }
     ) -> Self {
-        .init { request, response, data in
+        .init { response in
             if let httpResponse = response as? HTTPURLResponse,
-               !validRange.contains(httpResponse.statusCode),
-               let error = error(request, httpResponse, data) {
-                throw error
+               !validRange.contains(httpResponse.statusCode) {
+                return false
             }
+            return true
+        } makeError: {
+            error($0, $1)
         }
     }
 

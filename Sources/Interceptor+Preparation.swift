@@ -25,6 +25,18 @@ public struct PreparationInterceptor: Interceptor {
         try await preparation(&request)
     }
 
+    public func prepareDownload(_ request: inout URLRequest) async throws {
+        try await preparation(&request)
+    }
+
+    public func prepareUpload(with request: inout URLRequest, from data: Data) async throws {
+        try await preparation(&request)
+    }
+
+    public func prepareUpload(with request: inout URLRequest, fromFile file: URL) async throws {
+        try await preparation(&request)
+    }
+
 }
 
 extension Interceptor where Self == PreparationInterceptor {
