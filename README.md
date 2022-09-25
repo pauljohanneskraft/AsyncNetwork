@@ -17,7 +17,7 @@ let session = Session(
             headers["Content-Type"] = "application/json"
         },
         .validateStatus(),
-        .responseLogger(),
+        .dataResponseLogger(),
     ],
     maximumRetryCount: 1,
 )

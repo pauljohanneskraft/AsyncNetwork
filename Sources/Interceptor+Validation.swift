@@ -83,7 +83,9 @@ extension Interceptor where Self == ValidationInterceptor {
 
     public static func validate(
         isValid: @escaping (URLResponse) -> Bool,
-        makeError: @escaping (URLResponse, Data) -> Error
+        makeError: @escaping (URLResponse, Data) -> any Error = {
+            ValidationError(response: $0, data: $1)
+        }
     ) -> Self {
         .init(isValid: isValid, makeError: makeError)
     }
