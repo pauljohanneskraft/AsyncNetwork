@@ -57,17 +57,15 @@ extension URLSession {
     // MARK: Helpers
 
     private func download(
-        create: @escaping (URLSession, @escaping (URL?, URLResponse?, Error?) -> Void) -> URLSessionDownloadTask,
+        create: @escaping (URLSession, @Sendable @escaping (URL?, URLResponse?, Error?) -> Void) -> URLSessionDownloadTask,
         progress: @escaping (Double) -> Void,
         resumeData resumeDataHandler: @escaping (Data?) -> Void
     ) async throws -> (URL, URLResponse) {
         var task: URLSessionDownloadTask?
         var progressCancellable: Cancellable?
         let onCancel = {
-            task?.cancel {
-                resumeDataHandler($0)
-                progressCancellable?.cancel()
-            }
+            task?.cancel { resumeDataHandler($0) }
+            progressCancellable?.cancel()
         }
         return try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in

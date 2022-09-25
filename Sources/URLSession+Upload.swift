@@ -39,7 +39,7 @@ extension URLSession {
     // MARK: Helpers
 
     private func upload(
-        create: @escaping (URLSession, @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionUploadTask,
+        create: @escaping (URLSession, @Sendable @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionUploadTask,
         progress: @escaping (Double) -> Void
     ) async throws -> (Data, URLResponse) {
         var task: URLSessionUploadTask?
