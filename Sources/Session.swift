@@ -68,12 +68,14 @@ public final class Session {
 
     public func download(
         from url: URL,
+		to destinationURL: URL? = nil,
         progress: @escaping (Double) -> Void = { _ in },
         resumeData resumeDataHandler: ((Data?) -> Void)? = nil
     ) async throws -> URL {
 
         try await download(
             for: .init(url: url),
+			to: destinationURL,
             progress: progress,
             resumeData: resumeDataHandler
         )
@@ -81,12 +83,14 @@ public final class Session {
 
     public func download(
         for request: URLRequest,
+		to destinationURL: URL? = nil,
         progress: @escaping (Double) -> Void = { _ in },
         resumeData resumeDataHandler: ((Data?) -> Void)? = nil
     ) async throws -> URL {
 
         try await _download(
             for: request,
+			to: destinationURL,
             retryCount: maximumRetryCount,
             progress: progress,
             resumeData: resumeDataHandler
@@ -95,12 +99,14 @@ public final class Session {
 
     public func download(
         resumeFrom resumeData: Data,
+		to destinationURL: URL? = nil,
         progress: @escaping (Double) -> Void = { _ in },
         resumeData resumeDataHandler: ((Data?) -> Void)? = nil
     ) async throws -> URL {
 
         try await _download(
             resumeFrom: resumeData,
+			to: destinationURL,
             retryCount: maximumRetryCount,
             progress: progress,
             resumeData: resumeDataHandler
@@ -111,6 +117,7 @@ public final class Session {
 
     private func _download(
         for request: URLRequest,
+		to destinationURL: URL?,
         retryCount: Int,
         progress: @escaping (Double) -> Void,
         resumeData resumeDataHandler: ((Data?) -> Void)?
@@ -125,14 +132,25 @@ public final class Session {
 
         try Task.checkCancellation()
 
-        var (url, response) = try await session.startDownload(for: actualRequest, progress: progress, resumeData: resumeDataHandler)
+        var (url, response) = try await session.startDownload(
+			for: actualRequest,
+			to: destinationURL,
+			progress: progress,
+			resumeData: resumeDataHandler
+		)
 
         try Task.checkCancellation()
 
         for interceptor in interceptors.reversed() {
             if try await interceptor.shouldRetryDownload(actualRequest, for: &response, destination: &url) && retryCount > 0 {
                 try Task.checkCancellation()
-                return try await _download(for: request, retryCount: retryCount - 1, progress: progress, resumeData: resumeDataHandler)
+				return try await _download(
+					for: request,
+					to: destinationURL,
+					retryCount: retryCount - 1,
+					progress: progress,
+					resumeData: resumeDataHandler
+				)
             }
         }
 
@@ -143,6 +161,7 @@ public final class Session {
 
     private func _download(
         resumeFrom resumeData: Data,
+		to destinationURL: URL?,
         retryCount: Int,
         progress: @escaping (Double) -> Void,
         resumeData resumeDataHandler: ((Data?) -> Void)?
@@ -158,7 +177,12 @@ public final class Session {
 
         try Task.checkCancellation()
 
-        var (url, response) = try await session.resumeDownload(from: actualResumeData, progress: progress, resumeData: resumeDataHandler)
+		var (url, response) = try await session.resumeDownload(
+			from: actualResumeData,
+			to: destinationURL,
+			progress: progress,
+			resumeData: resumeDataHandler
+		)
 
         try Task.checkCancellation()
 
@@ -168,6 +192,7 @@ public final class Session {
 
                 return try await _download(
                     resumeFrom: resumeData,
+					to: destinationURL,
                     retryCount: retryCount - 1,
                     progress: progress,
                     resumeData: resumeDataHandler

@@ -52,7 +52,7 @@ extension URLSession {
             try await withCheckedThrowingContinuation { continuation in
                 task = create(self) { url, response, error in
                     guard let url = url, let response = response else {
-                        assertionFailure("There should always be either both url and response or an error.")
+						precondition(error != nil, "There should always be either both url and response or an error.")
                         continuation.resume(throwing: error ?? URLError(.badServerResponse))
                         return
                     }
